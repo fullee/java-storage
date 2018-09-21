@@ -36,11 +36,11 @@ import org.osgl.storage.ISObject;
 import org.osgl.storage.IStorageService;
 import org.osgl.util.E;
 import org.osgl.util.S;
+import org.osgl.util.TypeReference;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Implement {@link org.osgl.storage.IStorageService} on 七牛云存储-kodo
@@ -115,7 +115,9 @@ public class KodoService extends StorageServiceBase<KodoObject> implements IStor
     protected Map<String, String> doGetMeta(String fullPath) {
         try {
             FileInfo stat = bucketManager.stat(bucket, fullPath);
-            return $.copy(stat).to(Map.class);
+            return $.copy(stat)
+                    .targetGenericType(new TypeReference<Map<String, String>>() {})
+                    .to(Map.class);
         } catch (QiniuException e) {
             throw E.unexpected(e);
         }
@@ -134,7 +136,7 @@ public class KodoService extends StorageServiceBase<KodoObject> implements IStor
         Request req = new Request.Builder().url(baseUrl).build();
         try {
             Response resp = httpClient.newCall(req).execute();
-            return Objects.requireNonNull(resp.body()).byteStream();
+            return resp.body().byteStream();
         } catch (IOException e) {
             throw E.ioException(e);
         }
